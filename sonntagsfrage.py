@@ -4,7 +4,6 @@ from datetime import date, datetime, timedelta
 import sys
 import matplotlib.pyplot as plt
 import numpy as np
-import matplotlib
 
 
 def get_new_values():
@@ -13,13 +12,13 @@ def get_new_values():
     r = session.get('https://www.wahlrecht.de/umfragen/')
     institute = ['Allensbach', 'Kantar', 'Forsa', 'Politbarometer', 'GMS', 'dimap', 'insa', 'yougov']
     datum = r.html.find('#datum', first=True).text.split('\n')[1:-1]
-    cdu = r.html.find('#cdu', first=True).text.split('\n')[1:-1]
-    spd = r.html.find('#spd', first=True).text.split('\n')[1:-1]
-    gru = r.html.find('#gru', first=True).text.split('\n')[1:-1]
-    fdp = r.html.find('#fdp', first=True).text.split('\n')[1:-1]
-    lin = r.html.find('#lin', first=True).text.split('\n')[1:-1]
-    afd = r.html.find('#afd', first=True).text.split('\n')[1:-1]
-    son = r.html.find('#son', first=True).text.split('\n')[1:-1]
+    cdu = r.html.find('#cdu', first=True).text.replace(' %', '').split('\n')[1:-1]
+    spd = r.html.find('#spd', first=True).text.replace(' %', '').split('\n')[1:-1]
+    gru = r.html.find('#gru', first=True).text.replace(' %', '').split('\n')[1:-1]
+    fdp = r.html.find('#fdp', first=True).text.replace(' %', '').split('\n')[1:-1]
+    lin = r.html.find('#lin', first=True).text.replace(' %', '').split('\n')[1:-1]
+    afd = r.html.find('#afd', first=True).text.replace(' %', '').split('\n')[1:-1]
+    son = r.html.find('#son', first=True).text.replace(' %', '').split('\n')[1:-1]
     tablein = [institute, datum, cdu, spd, gru, fdp, lin, afd, son]
     for i in range(8):
         temparray = []
@@ -51,11 +50,9 @@ def main():
         for i in table:
             sqlin = ""
             for j in i:
-                stra = "'" + str(j).replace(',', '.') + "', "
-                numeric_filter = filter(str.isdigit, stra)
-                stra = "".join(numeric_filter)
-                sqlin += stra
-            sqlinfos.append(sqlin.lstrip().rstrip().rstrip(',').replace(' %', ''))
+                sqlin += "'" + j.replace(',', '.') + "', "
+            sqlinfos.append(sqlin.lstrip().rstrip().rstrip(',').replace(' %', '').replace('Son.', '').replace('FW', ''))
+        print(sqlinfos)
         for i in range(len(sqlinfos)):
             sql = "CREATE TABLE if not exists " + table[i][
                 0] + "(datum DATE PRIMARY KEY, cdu VARCHAR(64), spd VARCHAR(64), gru VARCHAR(64), fdp VARCHAR(64), lin VARCHAR(64), afd VARCHAR(64), son VARCHAR(64));"
